@@ -1,4 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <vector>
 #include <queue>
@@ -28,8 +27,8 @@ bool canMove(int r, int c)
 
 void init() {
 	//유닛 이동 가능 칸 확인.
-	for (int i = 0; i < transBoard.size(); ++i) {
-		for (int j = 0; j < transBoard[i].size(); ++j) {
+	for (size_t  i = 0; i < transBoard.size(); ++i) {
+		for (size_t  j = 0; j < transBoard[i].size(); ++j) {
 			if (!canMove(i, j)) {
 				transBoard[i][j] = -2;
 			}
