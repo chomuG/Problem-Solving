@@ -12,13 +12,14 @@ int n, k, maxEnergy;
 vector<int> branch, cache;
 
 
+//연속으로 먹거나 안먹거나
 void findMaxEnergy(int idx, int satisfaction, int energy) {
 	if (idx == n) {
 		maxEnergy = max(maxEnergy, energy);
 		return ;
 	}
 
-	findMaxEnergy(idx + 1, satisfaction, energy);
+	findMaxEnergy(idx + 1, 0, energy);
 
 	satisfaction += branch[idx];
 
