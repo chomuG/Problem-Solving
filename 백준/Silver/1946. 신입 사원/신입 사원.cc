@@ -2,29 +2,36 @@
 #include <vector>
 #include <algorithm>
 using namespace std;
- 
-int main(){
-    vector<pair<int,int>> recruits;
-    int T,N;
-    cin>>T;
-    while(T--){
-        int cnt=1, m2;
-        
-        cin>>N;
-        for( int i=0, scr1, scr2; i<N; ++i){
-            cin>>scr1>>scr2;
-            recruits.push_back(make_pair(scr1,scr2));
+int testCase, n;
+vector<vector<int>> ranks;
+
+int main()
+{
+    cin >> testCase;
+
+    for (int tc = 0; tc < testCase; ++tc)
+    {
+        int newEmpNum = 1, maxInterviewRank = 0;
+        cin >> n;
+        ranks.assign(n, vector<int>(2));
+
+        for (int i = 0; i < n; ++i)
+        {
+            cin >> ranks[i][0] >> ranks[i][1];
         }
-        sort(recruits.begin(), recruits.end());
-        m2=recruits[0].second;
-        for(int i=1; i<N; ++i){
-            if(recruits[i].second<m2){
-                cnt++;
-                m2=recruits[i].second;
+
+        sort(ranks.begin(), ranks.end());
+        maxInterviewRank = ranks[0][1];
+        for (int i = 1; i < n; ++i)
+        {
+            // 인터뷰 성적에서 나보다 높은 등수가 없으면 채용 후 등수 갱신
+            if (ranks[i][1] < maxInterviewRank)
+            {
+                newEmpNum++;
+                maxInterviewRank = ranks[i][1];
             }
         }
-        cout<<cnt<<endl;
-        recruits.clear();
+
+        cout << newEmpNum << "\n";
     }
-    return 0;
 }
