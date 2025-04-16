@@ -20,8 +20,7 @@ void dijkstra(){
         pq.pop();
         int curNode = cur.second, curWeight = -cur.first;
         
-        // 이미 더 짧은 경로를 찾았다면 스킵
-        if(curWeight > dist[curNode]) continue;
+
         
         // 현재 노드와 연결된 노드들만 방문
         for(auto& next : adj[curNode]) {
