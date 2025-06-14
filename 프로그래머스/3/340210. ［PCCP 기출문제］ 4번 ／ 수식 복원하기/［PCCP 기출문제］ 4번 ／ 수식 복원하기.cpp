@@ -1,221 +1,149 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-#include <iostream>
 using namespace std;
-vector<string> formulas, equations, answers;
-bool exactly;
-int radix=-1;
 
-bool isFormula(string formula){
-    if(formula[formula.size()-1]=='X')
-        return false;
-
-    return true;
-}
-
-//진수 판별
-void checkRadix(){
-    for(string formula : formulas){
-        string num="";
-        vector<string> nums;
-        char op;
-        //숫자 및 연산자 분리
-        for(int i=0; i<formula.size(); ++i){
-            char cur = formula[i];
-            if(isdigit(cur)){
-                num+=cur;
-            }else{
-                if(num!=""){
-                    nums.push_back(num);
-                    num="";
-                }
-                if(cur=='-' || cur=='+'){
-                    op=cur;
-                }
+vector<string> solution(vector<string> expressions) {
+    vector<string> formulas, equations, answers;
+    int radix = -1;
+    bool exactly = false;
+    
+    // 수식과 방정식 분리
+    for (string expr : expressions) {
+        if (expr.back() == 'X') equations.push_back(expr);
+        else formulas.push_back(expr);
+    }
+    
+    // 진수 판별
+    for (string formula : formulas) {
+        vector<int> nums;
+        char op = '+';
+        string num = "";
+        
+        for (char c : formula) {
+            if (isdigit(c)) num += c;
+            else {
+                if (!num.empty()) { nums.push_back(stoi(num)); num = ""; }
+                if (c == '+' || c == '-') op = c;
             }
-            if(i==formula.size()-1){
-                nums.push_back(num);
+        }
+        if (!num.empty()) nums.push_back(stoi(num));
+        
+        if (nums.size() >= 3) {
+            int a = nums[0], b = nums[1], c = nums[2];
+            
+            if (op == '+') {
+                // 일의 자리에서 자릿수 올림 확인
+                if ((a % 10) + (b % 10) != (c % 10)) {
+                    exactly = true;
+                    radix = (a % 10) + (b % 10) - (c % 10);
+                    break;
+                }
+                // 십의 자리에서 자릿수 올림 확인  
+                if (((a/10) % 10) + ((b/10) % 10) != ((c/10) % 10)) {
+                    exactly = true;
+                    radix = ((a/10) % 10) + ((b/10) % 10) - ((c/10) % 10);
+                    break;
+                }
+            } else {
+                // 일의 자리에서 자릿수 빌림 확인
+                if ((a % 10) - (b % 10) != (c % 10)) {
+                    exactly = true;
+                    radix = -(a % 10) + (b % 10) + (c % 10);
+                    break;
+                }
             }
         }
         
-        //수식 계산을 통한 최소 진수 판별
-        int a=stoi(nums[0]), b=stoi(nums[1]), c=stoi(nums[2]);
-        if(op=='+'){
-            //만약 자릿수가 넘어가면 확실히 몇진수인지 확인 가능
-            //일의 자리 계산
-            if((a%10)+(b%10)!=(c%10)){
-                exactly=true;
-                radix=(a%10)+(b%10)-(c%10);
-                return;
+        // 최소 진수 업데이트
+        for (int n : nums) {
+            while (n > 0) {
+                radix = max(radix, n % 10 + 1);
+                n /= 10;
             }
-            //십의 자리 계산
-            if(((a/10)%10)+((b/10)%10)!=((c/10)%10)){
-                exactly=true;
-                radix=((a/10)%10)+((b/10)%10)-((c/10)%10);
-                return;
-            }
-            //둘 다 안되면 최소 radix 갱신
-            for(int i=0; i<nums.size(); ++i){
-                int tmp =stoi(nums[i]);
-                while(tmp>0){
-                    radix = max(radix, tmp%10+1);
-                    tmp/=10;
-                }
-            }
-        }else{
-            //뺄 때 자릿수가 넘어가면 정확한 자릿수 확인 가능
-            //일의 자리만 계산
-            if((a%10)-(b%10)!=(c%10)){
-                exactly=true;
-                radix=-(a%10)+(b%10)+(c%10);
-                return;
-            }
-            
-            //최소 radix 갱신
-            for(int i=0; i<nums.size(); ++i){
-                int tmp =stoi(nums[i]);
-                while(tmp>0){
-                    radix = max(radix, tmp%10+1);
-                    tmp/=10;
+        }
+    }
+    
+    // 방정식에서 최소 진수 업데이트
+    for (string equation : equations) {
+        string num = "";
+        for (char c : equation) {
+            if (isdigit(c)) num += c;
+            else {
+                if (!num.empty()) {
+                    int n = stoi(num);
+                    while (n > 0) {
+                        radix = max(radix, n % 10 + 1);
+                        n /= 10;
+                    }
+                    num = "";
                 }
             }
         }
     }
     
-    for(string formula : equations){
-        string num="";
-        vector<string> nums;
-        char op;
-        //숫자 및 연산자 분리
-        for(int i=0; i<formula.size(); ++i){
-            char cur = formula[i];
-            if(isdigit(cur)){
-                num+=cur;
-            }else{
-                if(num!=""){
-                    nums.push_back(num);
-                    num="";
-                }
-                if(cur=='-' || cur=='+'){
-                    op=cur;
-                }
+    if (radix == 9) exactly = true;
+    
+    // 방정식 계산
+    for (string equation : equations) {
+        vector<int> nums;
+        char op = '+';
+        string num = "";
+        
+        for (char c : equation) {
+            if (isdigit(c)) num += c;
+            else {
+                if (!num.empty()) { nums.push_back(stoi(num)); num = ""; }
+                if (c == '+' || c == '-') op = c;
             }
         }
         
-        //최소 radix 갱신
-        for(int i=0; i<nums.size(); ++i){
-            int tmp =stoi(nums[i]);
-            while(tmp>0){
-                radix = max(radix, tmp%10+1);
-                tmp/=10;
+        int a = nums[0], b = nums[1];
+        
+        if (exactly) {
+            // 정확한 진수를 아는 경우
+            int result = 0, carry = 0, mult = 1;
+            int ta = a, tb = b;
+            
+            while (ta > 0 || tb > 0 || carry > 0) {
+                int da = ta % 10, db = tb % 10, dr = 0;
+                if (op == '+') {
+                    dr = da + db + carry;
+                    carry = dr / radix;
+                    dr %= radix;
+                } else {
+                    dr = da - db - carry;
+                    if (dr < 0) { dr += radix; carry = 1; }
+                    else carry = 0;
+                }
+                result += dr * mult;
+                mult *= 10;
+                ta /= 10; tb /= 10;
+            }
+            answers.push_back(equation.substr(0, equation.size()-1) + to_string(result));
+        } else {
+            // 정확한 진수를 모르는 경우 - overflow 체크
+            if (op == '+') {
+                if ((a % 10) + (b % 10) >= radix || ((a/10) % 10) + ((b/10) % 10) >= radix) {
+                    answers.push_back(equation.substr(0, equation.size()-1) + "?");
+                    continue;
+                }
+                int one = (a % 10) + (b % 10);
+                int two = ((a/10) % 10) + ((b/10) % 10);
+                int result = two * 10 + one;
+                answers.push_back(equation.substr(0, equation.size()-1) + to_string(result));
+            } else {
+                if ((a % 10) - (b % 10) < 0) {
+                    answers.push_back(equation.substr(0, equation.size()-1) + "?");
+                    continue;
+                }
+                int one = (a % 10) - (b % 10);
+                int two = ((a/10) % 10) - ((b/10) % 10);
+                int result = two * 10 + one;
+                answers.push_back(equation.substr(0, equation.size()-1) + to_string(result));
             }
         }
     }
-    if(radix==9)
-        exactly=true;
-}
-
-void calculateEquation(){
-    for(string equation : equations){
-        int answer=0;
-        string num="";
-        vector<string> nums;
-        char op;
-        //숫자 및 연산자 분리
-        for(int i=0; i<equation.size(); ++i){
-            char cur = equation[i];
-            if(isdigit(cur)){
-                num+=cur;
-            }else{
-                if(num!=""){
-                    nums.push_back(num);
-                    num="";
-                }
-                if(cur=='-' || cur=='+'){
-                    op=cur;
-                }
-            }
-        }
-        int a=stoi(nums[0]), b=stoi(nums[1]), one=0, two=0, thr=0;
-        if(exactly){
-            if(op=='+'){
-                //일의 자리 계산
-                if(a%10+b%10>=radix){
-                    one = a%10+b%10-radix;
-                    two++;
-                }else{
-                    one = a%10+b%10;
-                }
-                a/=10;
-                b/=10;
-                //십의 자리 계산
-                if(two+a%10+b%10>=radix){
-                    two= two+a%10+b%10-radix;
-                    thr++;
-                }else{
-                    two+= (a%10+b%10);
-                }
-            }else{
-                if(a%10-b%10<0){
-                    one = radix+(a%10-b%10);
-                    two--;
-                }else{
-                    one = a%10-b%10;
-                }
-                a/=10;
-                b/=10;
-                two+= ((a%10)-(b%10));
-            }
-            answer= (100*thr)+(10*two)+(one);
-            string tmp = to_string(answer);
-            answers.push_back(equation.substr(0, equation.size()-1)+tmp);
-        }else{
-            if(op=='+'){
-                //일의 자리 계산
-                if(a%10+b%10>=radix){
-                    answers.push_back(equation.substr(0, equation.size()-1)+'?');
-                    continue;
-                }else{
-                    one = a%10+b%10;
-                }
-                a/=10;
-                b/=10;
-                //십의 자리 계산
-                if(a%10+b%10>=radix){
-                    answers.push_back(equation.substr(0, equation.size()-1)+'?');
-                    continue;
-                }else{
-                    two+= (a%10+b%10);
-                }
-            }else{
-                if(a%10-b%10<0){
-                    answers.push_back(equation.substr(0, equation.size()-1)+'?');
-                    continue;
-                }else{
-                    one = a%10-b%10;
-                }
-                a/=10;
-                b/=10;
-                two+= ((a%10)-(b%10));
-            }
-            answer= (100*thr)+(10*two)+(one);
-            string tmp = to_string(answer);
-            answers.push_back(equation.substr(0, equation.size()-1)+tmp);
-        }
-    }
-}
-
-vector<string> solution(vector<string> expressions) {
-    //수식이냐 방정식이냐 구분
-    for(string formula : expressions){
-        if(isFormula(formula)){
-            formulas.push_back(formula);
-        }else{
-            equations.push_back(formula);
-        }
-    }
-    checkRadix();
-    calculateEquation();
+    
     return answers;
 }
